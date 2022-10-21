@@ -1,0 +1,68 @@
+# ! 没
+# Memo
+# 1. KSAアカウントを追加(ns"wordpress"に作る)
+# 2. GSAアカウントを追加(ConfigConnectorが設定されているcc-001経由で行う)
+# 3. IAM ポリシー バインディングを作成(ConfigConnectorが設定されているcc-001経由で行う)
+## 
+---
+# k8sのサービスアカウントを追加
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wordpress
+  namespace: wordpress
+  annotations:
+    iam.gke.io/gcp-service-account: inoue-wordpress-gsa@sreake-intern.iam.gserviceaccount.com
+...
+---
+# GSAの作成
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMServiceAccount
+metadata:
+  name: inoue-wordpress-gsa
+  namespace: cc-001
+spec:
+  displayName: "this sa uses for wordpress"
+...
+---
+# Todo: sql cloud proxy周りの権限をGSAに付与するyamlを記述 -> roles/editorでok(https://cloud.google.com/sql/docs/mysql/iam-roles?hl=ja)
+# Todo: AM サービス アカウントに、プロジェクトへの昇格した権限を付与
+# Todo: $ gcloud projects add-iam-policy-binding <PROJECT_ID> --member="serviceAccount:<SERVICE_ACCOUNT_NAME>@<PROJECT_ID>.iam.gserviceaccount.com" --role="roles/editor"
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicy
+metadata:
+  name: inoue-wordpress-gsa-iampolicy-1
+  namespace: cc-001
+spec: 
+  resourceRef:
+    # apiバージョンを指定しないといけない
+    # Refなので、イメージとしてどのAPIのどのkindのnameを取ってくる感じ
+    apiVersion: resourcemanager.cnrm.cloud.google.com/v1beta1
+    kind: Project
+    # project.yamlを参照するので
+    name: sreake-intern
+  bindings:
+    - role: roles/editor
+      members: # ここに書いてあるアカウントに対してロールを紐づける
+        - serviceAccount:inoue-wordpress-gsa@sreake-intern.iam.gserviceaccount.com
+...
+---
+# GSAのIAM ポリシー バインディングを作成
+apiVersion: iam.cnrm.cloud.google.com/v1beta1
+kind: IAMPolicy
+metadata:
+  name: inoue-wordpress-gsa-iampolicy-2
+  namespace: cc-001
+spec: 
+  resourceRef:
+    # apiバージョンを指定しないといけない
+    # Refなので、イメージとしてどのAPIのどのkindのnameを取ってくる感じ
+    apiVersion: iam.cnrm.cloud.google.com/v1beta1
+    kind: IAMServiceAccount
+    name: inoue-wordpress-gsa
+  bindings:
+    - role: roles/iam.workloadIdentityUser
+      members:
+        - serviceAccount:sreake-intern.svc.id.goog[wordpress/wordpress]
+        # - serviceAccount:<project-name>.svc.id.goog[<name-space>/<SA>]
+...

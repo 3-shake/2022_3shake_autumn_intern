@@ -1,0 +1,27 @@
+# deploy.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: sample
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    rollingUpdate:
+      # コンテナいくつまで増やしていいかい？レプリカ数のmS%
+      maxSurge: 50%
+      # 何%までコンテナ障害を許容するか
+      maxUnavailable: 0%
+  template:
+    metadata:
+      labels:
+        app: nginx
+        hoge: hoge
+    spec:
+      containers:
+      - image: nginx
+        name: nginx

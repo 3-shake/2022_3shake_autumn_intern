@@ -1,0 +1,18 @@
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLInstance
+metadata:
+  name: inoue-sql-instance
+  annotations:
+    cnrm.cloud.google.com/deletion-policy: abandon
+spec:
+  region: us-west1
+  databaseVersion: MYSQL_5_7
+  settings:
+    tier: db-n1-standard-1
+    backupConfiguration:
+      binaryLogEnabled: true
+      enabled: true
+      startTime: "18:00"
+#    ipConfiguration:
+#      privateNetworkRef:
+#        external: projects/sreake-intern/global/networks/default

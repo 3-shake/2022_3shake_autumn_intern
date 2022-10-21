@@ -1,0 +1,22 @@
+# rs.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx
+  namespace: sample
+spec:
+  #レプリカを2として、app: nginxに対して適用する
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    #nginxコンテナを作って...app: nginxというラベルをつける
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - image: nginx
+        name: nginx

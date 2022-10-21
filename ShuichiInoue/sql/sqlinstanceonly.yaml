@@ -1,0 +1,56 @@
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLInstance
+metadata:
+  # ↓書き換えてください
+  name: sqlinstance-inoue
+spec:
+  databaseVersion: MYSQL_5_7
+  region: us-central1
+  settings:
+    tier: db-f1-micro
+    ipConfiguration:
+      ipv4Enabled: false
+      privateNetworkRef:
+        # ↓書き換えてください
+        name: intern2022-hands-on-inoue-vpc
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeAddress
+metadata:
+  # ↓書き換えてください
+  name: private-ip-inoue
+spec:
+  addressType: INTERNAL
+  location: global
+  purpose: VPC_PEERING
+  prefixLength: 16
+  networkRef:
+    # ↓書き換えてください
+    name: intern2022-hands-on-inoue-vpc
+---
+apiVersion: compute.cnrm.cloud.google.com/v1beta1
+kind: ComputeNetwork
+metadata:
+  annotations:
+    cnrm.cloud.google.com/project-id: sreake-intern
+  # ↓書き換えてください
+  name: intern2022-hands-on-inoue-vpc
+spec:
+  autoCreateSubnetworks: false
+  # ↓書き換えてください
+  resourceID: intern2022-hands-on-inoue-vpc
+  routingMode: REGIONAL
+---
+apiVersion: servicenetworking.cnrm.cloud.google.com/v1beta1
+kind: ServiceNetworkingConnection
+metadata:
+  # ↓書き換えてください
+  name: svc-network-con-inoue
+spec:
+  networkRef:
+    # ↓書き換えてください
+    name: intern2022-hands-on-inoue-vpc
+  reservedPeeringRanges:
+    # ↓書き換えてください
+    - name: private-ip-inoue
+  service: servicenetworking.googleapis.com
