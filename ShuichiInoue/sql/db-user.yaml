@@ -1,0 +1,32 @@
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLUser
+metadata:
+  name: sqluser-sample
+spec:
+  instanceRef:
+    name: sqluser-dep
+  host: "%"
+  password:
+    valueFrom:
+      secretKeyRef:
+        name: sqluser-dep
+        key: password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sqluser-dep
+data:
+  password: cGFzc3dvcmQ=
+---
+apiVersion: sql.cnrm.cloud.google.com/v1beta1
+kind: SQLInstance
+metadata:
+  labels:
+    label-one: "value-one"
+  name: sqluser-dep
+spec:
+  region: us-central1
+  databaseVersion: MYSQL_5_7
+  settings:
+    tier: db-n1-standard-1

@@ -1,0 +1,77 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intern-prject
+  namespace: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+  template:
+    metadata:
+      labels:
+        app: wordpress
+    spec:
+      serviceAccountName: wordpress-ksa
+      containers:
+      - name: wordpress
+        image: wordpress
+        imagePullPolicy: Always
+        tty: true
+        # command: ["/bin/sh","-c" ,"sleep 90000"]
+        env: 
+        - name: WORDPRESS_DB_HOST
+          value: "127.0.0.1:3306"
+        - name: WORDPRESS_DB_USER
+          value: "wordpress"
+        - name: WORDPRESS_DB_PASSWORD
+          value: "wordpress"
+        - name: WORDPRESS_DB_NAME
+          value: "test_db"
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+      - name: cloud-sql-proxy
+        image: gcr.io/cloudsql-docker/gce-proxy:latest
+        command:
+          - "/cloud_sql_proxy"
+          - "-log_debug_stdout"
+          - "-instances=sreake-intern:us-central1:sqlinstance-inoue=tcp:3306"
+        securityContext:
+          runAsNonRoot: true
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu:    "100m"
+        ports:
+        - containerPort: 3306
+      - name: wew
+        image: imega/mysql-client
+        command: ["/bin/sh","-c" ,"sleep 90000"]
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu:    "100m"
+...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress-lb
+  namespace: wordpress
+spec:
+  selector:
+    app: wordpress
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
+...

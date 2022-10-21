@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  original-nginx
+  namespace: sample
+  labels:
+    app:  this-nginx
+spec:
+  selector:
+    matchLabels:
+      app: this-nginx
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  this-nginx
+    spec:
+      # initContainers:
+        # Init containers are exactly like regular containers, except:
+          # - Init containers always run to completion.
+          # - Each init container must complete successfully before the next one starts.
+      containers:
+      - image: nginx
+        name: nginx
+        resources:
+          requests:
+            cpu: 1
+            memory: 8Mi
+          limits:
+            cpu: 1
+            memory: 64Mi
